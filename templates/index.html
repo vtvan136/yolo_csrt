@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Stream Viewer</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        #stream-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+        pre {
+            background: #eaeaea;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #list-steps div {
+            margin: 5px 0; /* Thêm khoảng cách giữa các bước */
+        }
+    </style>
+</head>
+<body>
+    <h2>Trình Xem Video Stream</h2>
+    <div id="stream-container"></div>
+    <h3>Các Bước Cập Nhật</h3>
+    <div id="list-steps"></div>
+
+    <script>
+        const socket = io('http://localhost:5000');
+
+        socket.on('connect', () => {
+            console.log('Đã kết nối tới máy chủ');
+        });
+
+        socket.on('video_frame', (data) => {
+            const img = new Image();
+            img.src = 'data:image/jpeg;base64,' + btoa(
+                new Uint8Array(data).reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+            img.onerror = () => {
+                console.error('Lỗi khi tải hình ảnh');
+            };
+            document.getElementById('stream-container').innerHTML = '';
+            document.getElementById('stream-container').appendChild(img);
+        });
+
+        socket.on('update_list_steps', (data) => {
+            const listSteps = data.list_steps;
+            const stepsContainer = document.getElementById('list-steps');
+
+            // Xóa nội dung cũ
+            stepsContainer.innerHTML = '';
+
+            // Lặp qua từng bước và tạo phần tử cho chúng
+            listSteps.forEach((step, index) => {
+                const stepElement = document.createElement('div');
+                stepElement.textContent = `$Step {index + 1}: ${step}`; // Thêm số thứ tự
+                stepsContainer.appendChild(stepElement);
+            });
+
+            console.log('Nhận danh sách bước đã cập nhật:', listSteps);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Đã ngắt kết nối khỏi máy chủ');
+        });
+    </script>
+</body>
+</html>
