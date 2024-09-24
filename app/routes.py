@@ -1,24 +1,29 @@
-import cv2
 from flask import  request
+
 from app.models.generate_frames import generate_frames
+from app.models.middle_frame_video import *
+
+
 def init_routes(app,socketio):
     @app.route('/detect', methods=['POST'])
     def detect():
         data = request.json
         video_url = data.get('url')
-
         if not video_url:
             return {'error': 'URL không hợp lệ'}, 400
-
         cap = cv2.VideoCapture(video_url)
-        fps = int(cap.get(cv2.CAP_PROP_FPS))
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-        socketio.start_background_task(
-            target=generate_frames(cap, fps, width, height,socketio))
-
-        return {'status': 'Started processing video stream'}, 200
+        if not cap.isOpened():
+            print("Error: Cannot open video.")
+            exit(0)
+        # Ouput Video & List Time Steps
+        steps_in_seconds, output_path = generate_frames(cap)
+        print(steps_in_seconds,output_path)
+        # Middle Frame In Video
+        output_image_path = 'data/ouput_video.jpg'
+        middle_frame_video(video_url,output_image_path)
+        # Call API
+        #api_call_send_data_event((image_path,video_path, list_steps))
+        return {'status': 'Started processing video '}, 200
 
     @socketio.on('connect')
     def handle_connect():

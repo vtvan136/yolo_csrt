@@ -1,22 +1,20 @@
-FROM python:3.8-slim
+# Sử dụng image Python 3.8
+FROM python:3.8
 
-RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
 # Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Sao chép và cài đặt các yêu cầu
+# Sao chép file requirements.txt vào container
 COPY requirements.txt .
+
+# Cài đặt các thư viện cần thiết
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Sao chép mã nguồn ứng dụng
+# Sao chép mã nguồn vào container
 COPY . .
 
-# Chạy ứng dụng
-CMD ["gunicorn", "server:app", "--bind", "0.0.0.0:5000"]
+# Mở cổng (port) cho Flask
+EXPOSE 5000
+
+# Lệnh khởi động ứng dụng
+CMD ["python", "server.py"]

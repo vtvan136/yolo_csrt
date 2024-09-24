@@ -1,13 +1,17 @@
 version: '3.8'
 
 services:
-  flask_socketio:
-    build:
-      context: .  # Build từ Dockerfile trong thư mục hiện tại
+  web:
+    build: .
     ports:
-      - "5000:5000"  # Map port 5000 của container đến port 5000 của host
-    environment:
-      - FLASK_ENV=development  # Bạn có thể đặt environment variables ở đây nếu cần
+      - "5000:5000"
     volumes:
-      - .:/app  # Gắn kết thư mục hiện tại vào /app trong container
-    command: gunicorn -k eventlet -w 1 app:socketio --bind 0.0.0.0:5000
+      - .:/app
+    environment:
+      FLASK_ENV: development  # Thiết lập môi trường nếu cần
+    depends_on:
+      - redis  # Nếu bạn có sử dụng Redis cho SocketIO
+
+  # Nếu bạn cần Redis cho SocketIO
+  redis:
+    image: "redis:alpine"

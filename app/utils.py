@@ -1,8 +1,8 @@
-
+import math
 from app.setting  import required_counts
 
 
-def check_and_update_steps(current_time, detected_step,completed_steps,step_timestamps, list_steps,socketio):
+'''def check_and_update_steps(current_time, detected_step,completed_steps,step_timestamps, list_steps,socketio):
     if detected_step not in completed_steps:
         # Cập nhật timestamp cho bước được phát hiện
         step_timestamps[detected_step].append(current_time)
@@ -38,3 +38,25 @@ def calculate_iou(box1, box2):
 
 def adjust_bbox_to_frame(x, y, w, h, frame_width, frame_height):
     return max(0, x), max(0, y), min(w, frame_width - x), min(h, frame_height - y)
+'''
+############## VERSION 2.0 ###########################################################
+def get_color_for_step(step):
+    # Define colors for different steps; add more as needed
+    colors = [
+        (0, 255, 0),  # Green
+        (0, 0, 255),  # Red
+        (255, 0, 0),  # Blue
+        (255, 255, 0),  # Cyan
+        (0, 255, 255),  # Yellow
+        (255, 0, 255),  # Magenta
+    ]
+    return colors[step % len(colors)]
+
+def convert_to_seconds(steps_detected):
+    steps_in_seconds = [(step, format_time(time / 1000)) for step, time in steps_detected]
+    return steps_in_seconds
+def format_time(seconds):
+    total_seconds = math.floor(seconds)
+    minutes = total_seconds // 60
+    seconds = total_seconds % 60
+    return f"{minutes}:{seconds:02d}"
