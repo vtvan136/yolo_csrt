@@ -184,3 +184,38 @@ def convert_dict_to_min_sec(input_dict):
         result.append((index, f"{minutes}:{seconds:02d}"))
     return result
 
+
+def increment_and_add_time(data):
+    new_data = []
+
+    # Tăng giá trị số nguyên trong từng tuple
+    for index, (num, time_str) in enumerate(data):
+        if index == 0:
+            continue  # Bỏ qua phần tử đầu tiên
+        new_num = num
+        new_data.append((new_num, time_str))
+
+    # Cộng thêm 5 giây vào thời gian của phần tử cuối
+    last_num, last_time_str = new_data[-1]
+
+    # Chuyển đổi thời gian từ định dạng '0:MM' thành giây
+    minutes, seconds = map(int, last_time_str.split(':'))
+    total_seconds = minutes * 60 + seconds + 5  # Cộng thêm 5 giây
+
+    # Chuyển đổi lại thành định dạng '0:MM'
+    new_minutes = total_seconds // 60
+    new_seconds = total_seconds % 60
+
+    # Cập nhật thời gian của phần tử cuối
+    new_data[-1] = (last_num, f'{new_minutes}:{new_seconds:02d}')
+
+    # Thêm phần tử mới với ID cuối cùng
+    new_data.append((last_num + 1, f'{new_minutes}:{new_seconds:02d}'))
+
+    return new_data
+
+
+
+
+
+
