@@ -16,7 +16,7 @@ def init_routes(app,socketio):
             print("Error: Cannot open video.")
             exit(0)
         # Ouput Video & List Time Steps
-        steps_in_seconds, output_path = generate_frames(cap)
+        steps_in_seconds, output_path = generate_frames(cap,socketio)
         print(steps_in_seconds,output_path)
         # Middle Frame In Video
         output_image_path = 'data/ouput_video.jpg'

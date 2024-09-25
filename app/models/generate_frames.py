@@ -5,16 +5,16 @@ from ultralytics import YOLO
 model = YOLO("E:/HW/app/models/yolov8n.pt")
 
 frame_count = 0
-detect_interval = 25
+
 tracker = None
 steps_detected = []  # Stores detected steps with timestamps
 steps_executed = []  # Steps that have been executed
 last_step = None
-confidence_threshold = 0.7
 step_frequency = {}
 tracking_start_time = None
-execution_threshold = 10
-
+detect_interval = 25
+execution_threshold = 20
+confidence_threshold = 0.7
 def get_color_for_step(step):
     # Define colors for different steps; add more as needed
     colors = [
@@ -27,7 +27,7 @@ def get_color_for_step(step):
     ]
     return colors[step % len(colors)]
 
-def detect_and_track(frame, frame_time):
+def detect_and_track(frame, frame_time,socketio):
     global tracker, last_step, steps_detected, tracking_start_time
 
     results = model(frame)
@@ -63,6 +63,7 @@ def detect_and_track(frame, frame_time):
                     tracker.init(frame, bbox)
                     last_step = current_step
                     steps_detected.append((current_step, frame_time))
+                    socketio.emit('update_list_steps', {'list_steps': steps_detected})
                     break
 
 def update_tracker(frame):
@@ -98,7 +99,7 @@ def middle_frame_video(video_path,output_image_path):
         cap.release()
         if ret:
             cv2.imwrite(output_image_path, frame)
-
+    cap.release()
 def frame_to_image(frame):
     # Mã hóa frame thành định dạng JPEG
     success, encoded_image = cv2.imencode('.jpg', frame)
@@ -118,8 +119,8 @@ def format_time(seconds):
     seconds = total_seconds % 60
     return f"{minutes}:{seconds:02d}"
 
-def generate_frames(cap):
-    global frame_count
+def generate_frames(cap,socketio):
+    global frame_count,frame_count,tracker ,steps_detected ,steps_executed,last_step,step_frequency,tracking_start_time
     output_path = 'data/ouput_video_vp.webm'
     fourcc = cv2.VideoWriter_fourcc(*'vp80')  # Codec mp4
     fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -135,16 +136,29 @@ def generate_frames(cap):
 
         if (frame_count % detect_interval == 0 or tracker is None) and (
                 tracking_start_time is None or frame_time >= tracking_start_time):
-            detect_and_track(frame, frame_time)
+            detect_and_track(frame, frame_time,socketio)
         else:
             update_tracker(frame)
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
 
+        # Gửi frame đến client qua WebSocket
+        socketio.emit('video_frame', frame_bytes)
+        socketio.sleep(1 / fps)
         #cv2.imshow('Hand Washing Detection', frame)
         out.write(frame)
         #if cv2.waitKey(1) & 0xFF == ord('q'):
         #    break
 
     cap.release()
+    # Reset
+    frame_count = 0
+    tracker = None
+    steps_detected = []  # Stores detected steps with timestamps
+    steps_executed = []  # Steps that have been executed
+    last_step = None
+    step_frequency = {}
+    tracking_start_time = None
     #cv2.destroyAllWindows()
     steps_in_seconds = convert_to_seconds(steps_detected)
     return steps_in_seconds, output_path

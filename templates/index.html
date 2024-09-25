@@ -66,9 +66,9 @@
             stepsContainer.innerHTML = '';
 
             // Lặp qua từng bước và tạo phần tử cho chúng
-            listSteps.forEach((step, index) => {
+            listSteps.forEach(step => {
                 const stepElement = document.createElement('div');
-                stepElement.textContent = `$Step {index + 1}: ${step}`; // Thêm số thứ tự
+                stepElement.textContent = `$Step { step[0][0] + 1} `; // Thêm số thứ tự
                 stepsContainer.appendChild(stepElement);
             });
 
