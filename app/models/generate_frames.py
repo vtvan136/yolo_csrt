@@ -2,10 +2,10 @@ import math
 import cv2
 from ultralytics import YOLO
 
-model = YOLO("E:/HW/app/models/yolov8n.pt")
+model = YOLO("app/models/yolov8n.pt")
 
 frame_count = 0
-
+detect_interval = 25
 tracker = None
 steps_detected = []  # Stores detected steps with timestamps
 steps_executed = []  # Steps that have been executed
@@ -15,19 +15,22 @@ tracking_start_time = None
 detect_interval = 25
 execution_threshold = 20
 confidence_threshold = 0.7
+
+
 def get_color_for_step(step):
     # Define colors for different steps; add more as needed
     colors = [
-        (0, 255, 0),   # Green
-        (0, 0, 255),   # Red
-        (255, 0, 0),   # Blue
-        (255, 255, 0), # Cyan
-        (0, 255, 255), # Yellow
-        (255, 0, 255), # Magenta
+        (0, 255, 0),  # Green
+        (0, 0, 255),  # Red
+        (255, 0, 0),  # Blue
+        (255, 255, 0),  # Cyan
+        (0, 255, 255),  # Yellow
+        (255, 0, 255),  # Magenta
     ]
     return colors[step % len(colors)]
 
-def detect_and_track(frame, frame_time,socketio):
+
+def detect_and_track(frame, frame_time, socketio):
     global tracker, last_step, steps_detected, tracking_start_time
 
     results = model(frame)
@@ -66,6 +69,7 @@ def detect_and_track(frame, frame_time,socketio):
                     socketio.emit('update_list_steps', {'list_steps': steps_detected})
                     break
 
+
 def update_tracker(frame):
     global tracker, last_step, step_frequency, steps_executed
 
@@ -78,8 +82,9 @@ def update_tracker(frame):
             cv2.rectangle(frame, p1, p2, step_color, 2, 1)
 
             # Draw the step number on the box
-            step_text = f'Step: {last_step + 1 }'  # Text to display
-            cv2.putText(frame, step_text, (p1[0] + 10, p1[1] - 10 if p1[1] - 10 > 10 else p1[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, step_color, 2)
+            step_text = f'Step: {last_step + 1}'  # Text to display
+            cv2.putText(frame, step_text, (p1[0] + 10, p1[1] - 10 if p1[1] - 10 > 10 else p1[1] + 20),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, step_color, 2)
 
             if last_step not in step_frequency:
                 step_frequency[last_step] = 0
@@ -89,17 +94,20 @@ def update_tracker(frame):
                 steps_executed.append(last_step)
                 step_frequency[last_step] = 0
 
-def middle_frame_video(video_path,output_image_path):
+
+def middle_frame_video(video_path, output_image_path):
     cap = cv2.VideoCapture(video_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     middle_frame = total_frames // 2
-    for frame in range(middle_frame-5,middle_frame+5):
+    for frame in range(middle_frame - 5, middle_frame + 5):
         cap.set(cv2.CAP_PROP_POS_FRAMES, middle_frame)
         ret, frame = cap.read()
         cap.release()
         if ret:
             cv2.imwrite(output_image_path, frame)
     cap.release()
+
+
 def frame_to_image(frame):
     # Mã hóa frame thành định dạng JPEG
     success, encoded_image = cv2.imencode('.jpg', frame)
@@ -110,18 +118,22 @@ def frame_to_image(frame):
         print("Error: Cannot encode frame.")
         return None
 
+
 def convert_to_seconds(steps_detected):
-    steps_in_seconds = [(step, format_time(time/ 1000) ) for step, time in steps_detected]
+    steps_in_seconds = [(step, format_time(time / 1000)) for step, time in steps_detected]
     return steps_in_seconds
+
+
 def format_time(seconds):
     total_seconds = math.floor(seconds)
     minutes = total_seconds // 60
     seconds = total_seconds % 60
     return f"{minutes}:{seconds:02d}"
 
-def generate_frames(cap,socketio):
-    global frame_count,frame_count,tracker ,steps_detected ,steps_executed,last_step,step_frequency,tracking_start_time
-    output_path = 'data/ouput_video_vp.webm'
+
+def generate_frames(cap, socketio, event_id):
+    global frame_count, frame_count, tracker, steps_detected, steps_executed, last_step, step_frequency, tracking_start_time
+    output_path = f'data/{event_id}.webm'
     fourcc = cv2.VideoWriter_fourcc(*'vp80')  # Codec mp4
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -136,7 +148,7 @@ def generate_frames(cap,socketio):
 
         if (frame_count % detect_interval == 0 or tracker is None) and (
                 tracking_start_time is None or frame_time >= tracking_start_time):
-            detect_and_track(frame, frame_time,socketio)
+            detect_and_track(frame, frame_time, socketio)
         else:
             update_tracker(frame)
         _, buffer = cv2.imencode('.jpg', frame)
@@ -145,25 +157,20 @@ def generate_frames(cap,socketio):
         # Gửi frame đến client qua WebSocket
         socketio.emit('video_frame', frame_bytes)
         socketio.sleep(1 / fps)
-        #cv2.imshow('Hand Washing Detection', frame)
+        # cv2.imshow('Hand Washing Detection', frame)
         out.write(frame)
-        #if cv2.waitKey(1) & 0xFF == ord('q'):
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
         #    break
 
     cap.release()
     # Reset
     frame_count = 0
     tracker = None
+    steps_in_seconds = convert_to_seconds(steps_detected)
     steps_detected = []  # Stores detected steps with timestamps
     steps_executed = []  # Steps that have been executed
     last_step = None
     step_frequency = {}
     tracking_start_time = None
-    #cv2.destroyAllWindows()
-    steps_in_seconds = convert_to_seconds(steps_detected)
+    # cv2.destroyAllWindows()
     return steps_in_seconds, output_path
-
-
-
-
-

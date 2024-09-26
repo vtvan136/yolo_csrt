@@ -1,6 +1,6 @@
 # app/models/middle_frame_video.py
-
 import cv2
+
 
 # Hàm xử lý frame giữa video
 def middle_frame_video(video_path, output_image_path):
