@@ -2,7 +2,7 @@ import math
 import cv2
 from ultralytics import YOLO
 
-model = YOLO("app/models/yolov8n.pt")
+model = YOLO("app/models/yolov8_v2.1.pt")
 
 frame_count = 0
 detect_interval = 25
@@ -139,6 +139,13 @@ def generate_frames(cap, socketio, event_id):
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    # Tính tổng số frame của video
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    # Gửi tổng số frame đến client ngay khi kết nối
+    socketio.emit('total_frames', total_frames)
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:

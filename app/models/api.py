@@ -1,6 +1,10 @@
 import requests
 from app.models.api_clone_video import UpLoadFileToClone
-
+from app.models.load_env import (
+    EMAIL,
+    BE_HOST,
+    PASSWORD
+)
 
 def api_call_event_handing(event_id, list_steps, image_path, video_path):
     access_token = api_login_ai_account()
@@ -14,10 +18,10 @@ def api_call_event_handing(event_id, list_steps, image_path, video_path):
 
 
 def api_login_ai_account():
-    _url = 'http://0.0.0.0:8000/api/auth/login/'
+    _url = f'{BE_HOST}api/auth/login/'
     _data = {
-        "email": "hungpm372@gmail.com",
-        "password": "12345678"
+        "email": EMAIL,
+        "password": PASSWORD
     }
     _response = requests.post(_url, data=_data)
 
@@ -26,7 +30,7 @@ def api_login_ai_account():
 
 
 def api_call_send_data_event(access_token, event_id, image_path, video_path, list_steps):
-    url = f'http://0.0.0.0:8000/api/event/{event_id}'
+    url = f'{BE_HOST}api/event/{event_id}/ai_update_data/'
 
     clone_video = UpLoadFileToClone()
     url_image = clone_video.upload_image_to_clone(image_path)

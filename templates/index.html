@@ -40,10 +40,14 @@
     <div id="list-steps"></div>
 
     <script>
-        const socket = io('http://localhost:5002');
+        const socket = io('https://127.0.0.1:5002');
 
         socket.on('connect', () => {
             console.log('Đã kết nối tới máy chủ');
+        });
+
+        socket.on('total_frames', (data) => {
+            console.log('Đã kết nối tới máy chủ', data);
         });
 
         socket.on('video_frame', (data) => {
