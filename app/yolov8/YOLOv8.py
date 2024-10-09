@@ -61,7 +61,6 @@ class YOLOv8:
 
     def process_output(self, output):
         predictions = np.squeeze(output[0]).T
-
         # Filter out object confidence scores below threshold
         scores = np.max(predictions[:, 4:], axis=1)
         predictions = predictions[scores > self.conf_threshold, :]
@@ -90,7 +89,7 @@ class YOLOv8:
         boxes = self.rescale_boxes(boxes)
 
         # Convert boxes to xyxy format
-        boxes = xywh2xyxy(boxes)
+        #boxes = xywh2xyxy(boxes)
 
         return boxes
 

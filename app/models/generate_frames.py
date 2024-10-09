@@ -2,7 +2,7 @@ import math
 import cv2
 from ultralytics import YOLO
 
-model = YOLO("app/models/yolov8n.pt")
+model = YOLO("E:\HW\models\yolov8_v2.1.pt")
 
 
 def frame_to_image(frame):
