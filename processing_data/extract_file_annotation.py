@@ -3,7 +3,7 @@ import cv2
 from ultralytics import YOLO
 
 # Khởi tạo mô hình YOLOv8
-model = YOLO('E:/HW/app/models/yolov8n.pt')  # Thay 'yolov8n.pt' bằng mô hình bạn muốn sử dụng
+model = YOLO('/models/yolov8n.pt')  # Thay 'yolov8n.pt' bằng mô hình bạn muốn sử dụng
 
 input_directory = r'E:/HW/data/frame_data'  # Thay đổi đường dẫn này
 output_directory = r'E:/HW/data/frame_data'  # Đường dẫn để lưu file TXT đầu ra

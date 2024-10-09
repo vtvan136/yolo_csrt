@@ -3,7 +3,7 @@ import cv2
 from ultralytics import YOLO
 
 # Tải mô hình YOLOv8
-model = YOLO('E:\HW/app\models\yolov8n.pt')  # Bạn có thể thay đổi thành yolov8s.pt, yolov8m.pt, ...
+model = YOLO('/models/yolov8n.pt')  # Bạn có thể thay đổi thành yolov8s.pt, yolov8m.pt, ...
 
 # Khởi tạo video
 '''video_source = 'E:\HW\data/test_video_TOD.mp4'  # Thay thế bằng đường dẫn video của bạn

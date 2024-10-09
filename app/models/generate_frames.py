@@ -2,7 +2,7 @@ import math
 import cv2
 from ultralytics import YOLO
 
-model = YOLO("E:/HW/app/models/yolov8n.pt")
+model = YOLO("app/models/yolov8n.pt")
 
 
 def frame_to_image(frame):
@@ -213,7 +213,6 @@ def increment_and_add_time(data):
     new_data.append((last_num + 1, f'{new_minutes}:{new_seconds:02d}'))
 
     return new_data
-
 
 
 

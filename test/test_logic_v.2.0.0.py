@@ -4,7 +4,7 @@ import cv2
 from ultralytics import YOLO
 import time
 # Khởi tạo YOLOv8 model và video
-model = YOLO("E:/HW/app/models/yolov8n.pt")
+model = YOLO("/models/yolov8n.pt")
 video_path = 'E:/HW/data/test_video_TOD.mp4'
 cap = cv2.VideoCapture(video_path)
 
